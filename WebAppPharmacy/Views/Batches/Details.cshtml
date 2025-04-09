@@ -1,0 +1,45 @@
+﻿@model WebAppPharmacy.Models.Batch
+
+@{
+    ViewData["Title"] = "Детали партии";
+}
+
+<h2 class="mb-4">Информация о партии</h2>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-4">Товар</dt>
+            <dd class="col-sm-8">@Model.Product?.Title</dd>
+
+            <dt class="col-sm-4">Номер партии</dt>
+            <dd class="col-sm-8">@Model.BatchNumber</dd>
+
+            <dt class="col-sm-4">Дата поставки</dt>
+            <dd class="col-sm-8">@Model.SupplyDate.ToShortDateString()</dd>
+
+            <dt class="col-sm-4">Срок годности</dt>
+            <dd class="col-sm-8">@Model.ExpirationDate.ToShortDateString()</dd>
+
+            <dt class="col-sm-4">Кол-во</dt>
+            <dd class="col-sm-8">@Model.Quantity</dd>
+
+            <dt class="col-sm-4">Остаток</dt>
+            <dd class="col-sm-8">@Model.RemainingQuantity</dd>
+
+            <dt class="col-sm-4">Цена закупки</dt>
+            <dd class="col-sm-8">@Model.PurchasePrice.ToString("0.00")</dd>
+
+            <dt class="col-sm-4">Условия хранения</dt>
+            <dd class="col-sm-8">@Model.StorageConditions</dd>
+
+            <dt class="col-sm-4">Статус</dt>
+            <dd class="col-sm-8">@Model.Status?.StatusName</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">✏️ Редактировать</a>
+    <a asp-action="Index" class="btn btn-secondary">Назад</a>
+</div>

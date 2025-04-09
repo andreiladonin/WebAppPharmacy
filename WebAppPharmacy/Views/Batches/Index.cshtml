@@ -1,0 +1,49 @@
+﻿@model IEnumerable<WebAppPharmacy.Models.VM.BatchViewModel>
+
+@{
+    ViewData["Title"] = "Список партий";
+}
+
+<h2 class="mb-4">Список партий</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">➕ Добавить партию</a>
+</p>
+
+<table class="table table-bordered table-striped table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Товар</th>
+            <th>Номер партии</th>
+            <th>Поставка</th>
+            <th>Срок годности</th>
+            <th>Кол-во</th>
+            <th>Остаток</th>
+            <th>Цена закупки</th>
+            <th>Статус</th>
+            <th class="text-center">Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ProductTitle</td>
+                <td>@item.BatchNumber</td>
+                <td>@item.SupplyDate.ToShortDateString()</td>
+                <td>@item.ExpirationDate.ToShortDateString()</td>
+                <td>@item.Quantity</td>
+                <td>@item.RemainingQuantity</td>
+                <td>@item.PurchasePrice.ToString("0.00")</td>
+                <td>@item.StatusName</td>
+                <td class="text-center">
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">✏️</a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">ℹ️</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">🗑️</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+</table>

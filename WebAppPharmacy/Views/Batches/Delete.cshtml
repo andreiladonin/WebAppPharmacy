@@ -1,0 +1,25 @@
+﻿@model WebAppPharmacy.Models.Batch
+
+@{
+    ViewData["Title"] = "Удаление партии";
+}
+
+<h2 class="text-danger mb-4">Удалить партию</h2>
+<h5>Вы уверены, что хотите удалить следующую партию?</h5>
+
+<table class="table table-bordered">
+    <tr><th>Товар</th><td>@Model.Product?.Title</td></tr>
+    <tr><th>Номер партии</th><td>@Model.BatchNumber</td></tr>
+    <tr><th>Дата поставки</th><td>@Model.SupplyDate.ToShortDateString()</td></tr>
+    <tr><th>Срок годности</th><td>@Model.ExpirationDate.ToShortDateString()</td></tr>
+    <tr><th>Кол-во</th><td>@Model.Quantity</td></tr>
+    <tr><th>Остаток</th><td>@Model.RemainingQuantity</td></tr>
+    <tr><th>Цена закупки</th><td>@Model.PurchasePrice ₽</td></tr>
+    <tr><th>Статус</th><td>@Model.Status?.StatusName</td></tr>
+</table>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Удалить</button>
+    <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+</form>

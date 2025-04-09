@@ -1,0 +1,86 @@
+﻿@model WebAppPharmacy.Models.Batch
+
+@{
+    ViewData["Title"] = "Создание партии";
+}
+
+<h2 class="mb-4">Добавить новую партию</h2>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-floating mb-3">
+                <select asp-for="ProductId" class="form-select" asp-items="ViewBag.ProductId">
+                    <option value="">-- выберите товар --</option>
+                </select>
+                <label asp-for="ProductId">Товар</label>
+                <span asp-validation-for="ProductId" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="BatchNumber" class="form-control" placeholder=" " />
+                <label asp-for="BatchNumber"></label>
+                <span asp-validation-for="BatchNumber" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="SupplyDate" type="date" class="form-control" />
+                <label asp-for="SupplyDate"></label>
+                <span asp-validation-for="SupplyDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="ExpirationDate" type="date" class="form-control" />
+                <label asp-for="ExpirationDate"></label>
+                <span asp-validation-for="ExpirationDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="StorageConditions" class="form-control" placeholder=" " />
+                <label asp-for="StorageConditions"></label>
+                <span asp-validation-for="StorageConditions" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-floating mb-3">
+                <input asp-for="Quantity" class="form-control" />
+                <label asp-for="Quantity"></label>
+                <span asp-validation-for="Quantity" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="RemainingQuantity" class="form-control" />
+                <label asp-for="RemainingQuantity"></label>
+                <span asp-validation-for="RemainingQuantity" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="PurchasePrice" class="form-control" />
+                <label asp-for="PurchasePrice"></label>
+                <span asp-validation-for="PurchasePrice" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <select asp-for="StatusId" class="form-select" asp-items="ViewBag.StatusId">
+                    <option value="">-- выберите статус --</option>
+                </select>
+                <label asp-for="StatusId">Статус</label>
+                <span asp-validation-for="StatusId" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-success">💾 Создать</button>
+        <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

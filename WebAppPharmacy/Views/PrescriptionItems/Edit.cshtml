@@ -1,0 +1,41 @@
+﻿@model WebAppPharmacy.Models.PrescriptionItem
+
+@{
+    ViewData["Title"] = "Редактировать позицию рецепта";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="PrescriptionId" />
+
+    <div class="mb-3">
+        <label asp-for="ProductId" class="form-label"></label>
+        <select asp-for="ProductId" class="form-select" asp-items="ViewBag.ProductId">
+            <option value="">Выберите товар</option>
+        </select>
+        <span asp-validation-for="ProductId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Quantity" class="form-label"></label>
+        <input asp-for="Quantity" class="form-control" />
+        <span asp-validation-for="Quantity" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DispensedQuantity" class="form-label"></label>
+        <input asp-for="DispensedQuantity" class="form-control" />
+        <span asp-validation-for="DispensedQuantity" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Сохранить</button>
+    <a asp-controller="Prescriptions" asp-action="Details" asp-route-id="@Model.PrescriptionId" class="btn btn-secondary">Отмена</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

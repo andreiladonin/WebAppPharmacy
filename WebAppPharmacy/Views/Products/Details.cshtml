@@ -1,0 +1,48 @@
+﻿@model WebAppPharmacy.Models.Product
+
+@{
+    ViewData["Title"] = "Детали товара";
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+
+<dl class="row">
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Title)</dt>
+    <dd class="col-sm-9">@Model.Title</dd>
+
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Description)</dt>
+    <dd class="col-sm-9">@Model.Description</dd>
+
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.DosageForm)</dt>
+    <dd class="col-sm-9">@Model.DosageForm</dd>
+
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Dosage)</dt>
+    <dd class="col-sm-9">@Model.Dosage</dd>
+
+    <dt class="col-sm-3">Единица измерения</dt>
+    <dd class="col-sm-9">@Model.MeasurementUnit?.UnitName</dd>
+
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.Price)</dt>
+    <dd class="col-sm-9">@Model.Price ₽</dd>
+
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.MinQuantity)</dt>
+    <dd class="col-sm-9">@Model.MinQuantity</dd>
+
+    <dt class="col-sm-3">Производитель</dt>
+    <dd class="col-sm-9">@Model.Manufacturer?.Title</dd>
+
+    <dt class="col-sm-3">Категория</dt>
+    <dd class="col-sm-9">@Model.Category?.Title</dd>
+
+    <dt class="col-sm-3">Тип</dt>
+    <dd class="col-sm-9">@Model.Type?.TypeName</dd>
+
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.IsRecipe)</dt>
+    <dd class="col-sm-9">@(Model.IsRecipe ? "Да" : "Нет")</dd>
+
+    <dt class="col-sm-3">@Html.DisplayNameFor(m => m.IsMarked)</dt>
+    <dd class="col-sm-9">@(Model.IsMarked ? "Да" : "Нет")</dd>
+</dl>
+
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">✏️ Редактировать</a>
+<a asp-action="Index" class="btn btn-secondary">Назад к списку</a>

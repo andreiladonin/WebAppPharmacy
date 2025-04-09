@@ -1,0 +1,40 @@
+﻿<!-- Index.cshtml -->
+@model IEnumerable<WebAppPharmacy.Models.VM.ProductViewModel>
+
+<h2 class="mb-4">Список товаров</h2>
+<a asp-action="Create" class="btn btn-primary mb-3">➕ Добавить товар</a>
+<table class="table table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Название</th>
+            <th>Категория</th>
+            <th>Тип</th>
+            <th>Производитель</th>
+            <th>Ед. измерения</th>
+            <th>Цена</th>
+            <th>Рецепт</th>
+            <th>Маркировка</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Title</td>
+                <td>@item.Category</td>
+                <td>@item.Type</td>
+                <td>@item.Manufacturer</td>
+                <td>@item.MeasurementUnit</td>
+                <td>@item.Price ₽</td>
+                <td>@(item.IsRecipe ? "Да" : "Нет")</td>
+                <td>@(item.IsMarked ? "Да" : "Нет")</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">✏️</a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">🔍</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">🗑️</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

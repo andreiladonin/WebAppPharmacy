@@ -1,0 +1,70 @@
+﻿@model WebAppPharmacy.Models.Prescription
+
+@{
+    ViewData["Title"] = "Детали рецепта";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Доктор: @Model.DoctorName</h5>
+        <p class="card-text">Код рецепта: <strong>@Model.PrescriptionCode</strong></p>
+        <p class="card-text">Дата выдачи: @Model.IssueDate.ToShortDateString()</p>
+        <p class="card-text">Срок действия: @Model.ExpiryDate?.ToShortDateString()</p>
+        <p class="card-text">Клиент: <strong>@Model.Client?.FullName</strong></p>
+        <p class="card-text">Статус: <span class="badge bg-info">@Model.Status?.StatusName</span></p>
+    </div>
+</div>
+
+<h4>Позиции рецепта</h4>
+<a asp-controller="PrescriptionItems" asp-action="Create" asp-route-prescriptionId="@Model.Id" class="btn btn-primary mb-2">
+    + Добавить позицию
+</a>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>Товар</th>
+            <th>Количество</th>
+            <th>Погашено</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Items != null && Model.Items.Count > 0)
+        {
+            foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@item.Product?.Title</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.DispensedQuantity</td>
+                    <td class="text-end">
+                        <div class="btn-group">
+                            <a asp-controller="PrescriptionItems" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">✏</a>
+                            <form asp-controller="PrescriptionItems" asp-action="Delete" method="post" asp-route-id="@item.Id" onsubmit="return confirm('Удалить позицию?');">
+                                <input type="hidden" name="prescriptionId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-sm btn-danger">🗑</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr><td colspan="4" class="text-center">Нет позиций</td></tr>
+        }
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-between mt-4">
+    <a asp-action="Index" class="btn btn-secondary">Назад к списку</a>
+
+    <form asp-action="Delete" method="post" onsubmit="return confirm('Вы действительно хотите удалить рецепт?');">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <button type="submit" class="btn btn-danger">Удалить рецепт</button>
+    </form>
+</div>
+

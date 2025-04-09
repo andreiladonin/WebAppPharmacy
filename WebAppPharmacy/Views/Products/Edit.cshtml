@@ -1,0 +1,102 @@
+﻿@model WebAppPharmacy.Models.Product
+
+@{
+    ViewData["Title"] = "Редактирование товара";
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+
+<form asp-action="Edit">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="row">
+        <div class="col-md-6">
+
+            <div class="form-floating mb-3">
+                <input asp-for="Title" class="form-control" placeholder=" " />
+                <label asp-for="Title"></label>
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <textarea asp-for="Description" class="form-control" style="height: 100px" placeholder=" "></textarea>
+                <label asp-for="Description"></label>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="DosageForm" class="form-control" placeholder=" " />
+                <label asp-for="DosageForm"></label>
+                <span asp-validation-for="DosageForm" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Dosage" class="form-control" placeholder=" " />
+                <label asp-for="Dosage"></label>
+                <span asp-validation-for="Dosage" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <select asp-for="MeasurementUnitId" class="form-select" asp-items="ViewBag.MeasurementUnitId"></select>
+                <label asp-for="MeasurementUnitId"></label>
+                <span asp-validation-for="MeasurementUnitId" class="text-danger"></span>
+            </div>
+
+        </div>
+
+        <div class="col-md-6">
+
+            <div class="form-floating mb-3">
+                <select asp-for="ManufacturerId" class="form-select" asp-items="ViewBag.ManufacturerId"></select>
+                <label asp-for="ManufacturerId"></label>
+                <span asp-validation-for="ManufacturerId" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId"></select>
+                <label asp-for="CategoryId"></label>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <select asp-for="TypeId" class="form-select" asp-items="ViewBag.TypeId"></select>
+                <label asp-for="TypeId"></label>
+                <span asp-validation-for="TypeId" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Price" class="form-control" placeholder=" " />
+                <label asp-for="Price"></label>
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="MinQuantity" class="form-control" placeholder=" " />
+                <label asp-for="MinQuantity"></label>
+                <span asp-validation-for="MinQuantity" class="text-danger"></span>
+            </div>
+
+            <div class="form-check form-switch mb-2">
+                <input asp-for="IsRecipe" class="form-check-input" />
+                <label asp-for="IsRecipe" class="form-check-label"></label>
+            </div>
+
+            <div class="form-check form-switch">
+                <input asp-for="IsMarked" class="form-check-input" />
+                <label asp-for="IsMarked" class="form-check-label"></label>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-success">💾 Сохранить</button>
+        <a asp-action="Index" class="btn btn-secondary">Назад</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
