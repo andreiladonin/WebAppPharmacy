@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebAppPharmacy;
 using WebAppPharmacy.Models;
+using WebAppPharmacy.Models.VM;
 
 namespace WebAppPharmacy.Controllers
 {
@@ -22,22 +23,15 @@ namespace WebAppPharmacy.Controllers
         // GET: Prescriptions
         public async Task<IActionResult> Index()
         {
-            var prescriptions = await _context.Prescriptions
-                .FromSqlRaw(@"SELECT * FROM prescriptions")
-                .ToListAsync();
+            var sql = @"
+            SELECT p.""Id"", p.""DoctorName"", p.""PrescriptionCode"", p.""IssueDate"", p.""ExpiryDate"",
+                   c.""FullName"" AS ""ClientName"", s.""StatusName""
+            FROM prescriptions p
+            JOIN clients c ON c.""Id"" = p.""ClientId""
+            JOIN prescription_statuses s ON s.""Id"" = p.""StatusId""";
 
-            foreach (var prescription in prescriptions)
-            {
-                prescription.Client = await _context.Clients
-                    .FromSqlRaw("SELECT * FROM clients WHERE \"Id\" = {0}", prescription.ClientId)
-                    .FirstOrDefaultAsync();
-
-                prescription.Status = await _context.PrescriptionStatuses
-                    .FromSqlRaw("SELECT * FROM prescription_statuses WHERE \"Id\" = {0}", prescription.StatusId)
-                    .FirstOrDefaultAsync();
-            }
-
-            return View(prescriptions);
+            var result = await _context.Set<PrescriptionViewModel>().FromSqlRaw(sql).ToListAsync();
+            return View(result);
         }
 
         // GET: Prescriptions/Details/5
@@ -73,39 +67,41 @@ namespace WebAppPharmacy.Controllers
             return View(prescription);
         }
 
-        // GET: PrescriptionItems/Create
-        public IActionResult Create(long? prescriptionId)
+        // GET: Prescriptions/Create
+        public IActionResult Create()
         {
-            ViewData["PrescriptionId"] = new SelectList(_context.Prescriptions.FromSqlRaw("SELECT * FROM prescriptions"), "Id", "PrescriptionCode", prescriptionId);
-            ViewData["ProductId"] = new SelectList(_context.Products.FromSqlRaw("SELECT * FROM products"), "Id", "Title");
-
-            ViewBag.PrescriptionId = prescriptionId; // для скрытого поля в форме
+            ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "FullName");
+            ViewData["StatusId"] = new SelectList(_context.PrescriptionStatuses, "Id", "StatusName");
             return View();
         }
 
-        // POST: PrescriptionItems/Create
+        // POST: Prescriptions/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,PrescriptionId,ProductId,Quantity,DispensedQuantity")] PrescriptionItem item)
+        public async Task<IActionResult> Create([Bind("DoctorName,PrescriptionCode,IssueDate,ExpiryDate,ClientId,StatusId")] Prescription prescription)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                await _context.Database.ExecuteSqlRawAsync(@"
-                INSERT INTO prescription_items (PrescriptionId, ProductId, Quantity, DispensedQuantity)
-                VALUES ({0}, {1}, {2}, {3})",
-                    item.PrescriptionId,
-                    item.ProductId,
-                    item.Quantity,
-                    item.DispensedQuantity);
-
-                return RedirectToAction("Details", "Prescriptions", new { id = item.PrescriptionId });
+                ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "FullName", prescription.ClientId);
+                ViewData["StatusId"] = new SelectList(_context.PrescriptionStatuses, "Id", "StatusName", prescription.StatusId);
+                return View(prescription);
             }
+            prescription.IssueDate = DateTime.SpecifyKind(prescription.IssueDate, DateTimeKind.Utc);
+            if (prescription.ExpiryDate != null)
+                prescription.ExpiryDate = DateTime.SpecifyKind(prescription.ExpiryDate.Value, DateTimeKind.Utc);
+            await _context.Database.ExecuteSqlRawAsync(@"
+            INSERT INTO prescriptions 
+            (""DoctorName"", ""PrescriptionCode"", ""IssueDate"", ""ExpiryDate"", ""ClientId"", ""StatusId"") 
+            VALUES ({0}, {1}, {2}, {3}, {4}, {5})",
+                prescription.DoctorName,
+                prescription.PrescriptionCode,
+                prescription.IssueDate,
+                prescription.ExpiryDate,
+                prescription.ClientId,
+                prescription.StatusId);
 
-            ViewData["PrescriptionId"] = new SelectList(_context.Prescriptions.FromSqlRaw("SELECT * FROM prescriptions"), "Id", "PrescriptionCode", item.PrescriptionId);
-            ViewData["ProductId"] = new SelectList(_context.Products.FromSqlRaw("SELECT * FROM products"), "Id", "Title", item.ProductId);
-            return View(item);
+            return RedirectToAction(nameof(Index));
         }
-
 
         // GET: Prescriptions/Edit/5
         public async Task<IActionResult> Edit(long? id)
@@ -118,8 +114,8 @@ namespace WebAppPharmacy.Controllers
 
             if (prescription == null) return NotFound();
 
-            ViewData["ClientId"] = new SelectList(_context.Clients.FromSqlRaw("SELECT * FROM clients"), "Id", "FullName", prescription.ClientId);
-            ViewData["StatusId"] = new SelectList(_context.PrescriptionStatuses.FromSqlRaw("SELECT * FROM prescription_statuses"), "Id", "StatusName", prescription.StatusId);
+            ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "FullName", prescription.ClientId);
+            ViewData["StatusId"] = new SelectList(_context.PrescriptionStatuses, "Id", "StatusName", prescription.StatusId);
             return View(prescription);
         }
 
@@ -130,24 +126,30 @@ namespace WebAppPharmacy.Controllers
         {
             if (id != prescription.Id) return NotFound();
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                await _context.Database.ExecuteSqlRawAsync(@"
-                UPDATE prescriptions SET DoctorName = {0}, PrescriptionCode = {1}, IssueDate = {2}, ExpiryDate = {3}, ClientId = {4}, StatusId = {5} WHERE Id = {6}",
-                    prescription.DoctorName,
-                    prescription.PrescriptionCode,
-                    prescription.IssueDate,
-                    prescription.ExpiryDate,
-                    prescription.ClientId,
-                    prescription.StatusId,
-                    prescription.Id);
-
-                return RedirectToAction(nameof(Index));
+                ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "FullName", prescription.ClientId);
+                ViewData["StatusId"] = new SelectList(_context.PrescriptionStatuses, "Id", "StatusName", prescription.StatusId);
+                return View(prescription);
             }
 
-            ViewData["ClientId"] = new SelectList(_context.Clients.FromSqlRaw("SELECT * FROM clients"), "Id", "FullName", prescription.ClientId);
-            ViewData["StatusId"] = new SelectList(_context.PrescriptionStatuses.FromSqlRaw("SELECT * FROM prescription_statuses"), "Id", "StatusName", prescription.StatusId);
-            return View(prescription);
+            prescription.IssueDate = DateTime.SpecifyKind(prescription.IssueDate, DateTimeKind.Utc);
+            if (prescription.ExpiryDate != null)
+                prescription.ExpiryDate = DateTime.SpecifyKind(prescription.ExpiryDate.Value, DateTimeKind.Utc);
+            await _context.Database.ExecuteSqlRawAsync(@"
+            UPDATE prescriptions SET 
+            ""DoctorName"" = {0}, ""PrescriptionCode"" = {1}, ""IssueDate"" = {2}, ""ExpiryDate"" = {3}, 
+            ""ClientId"" = {4}, ""StatusId"" = {5}
+            WHERE ""Id"" = {6}",
+                prescription.DoctorName,
+                prescription.PrescriptionCode,
+                prescription.IssueDate,
+                prescription.ExpiryDate,
+                prescription.ClientId,
+                prescription.StatusId,
+                prescription.Id);
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Prescriptions/Delete/5
@@ -172,33 +174,44 @@ namespace WebAppPharmacy.Controllers
             return View(prescription);
         }
 
-
-        // POST: Prescriptions/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(long id)
+        public async Task<IActionResult> DeleteConfirmed(long id)
         {
-            // Проверка: есть ли позиции рецепта
-            var hasItems = await _context.PrescriptionItems
-                .FromSqlRaw("SELECT * FROM prescription_items WHERE \"PrescriptionId\" = {0}", id)
-                .AnyAsync();
-
-            if (hasItems)
+            try
             {
-                TempData["Error"] = "Нельзя удалить рецепт, у которого есть связанные позиции.";
+                // Начинаем транзакцию для атомарности
+                using var transaction = await _context.Database.BeginTransactionAsync();
+
+                // Удаляем все позиции рецепта из таблицы prescription_items
+                await _context.Database.ExecuteSqlRawAsync(
+                    "DELETE FROM prescription_items WHERE \"PrescriptionId\" = {0}", id);
+
+                // Удаляем сам рецепт из таблицы prescriptions
+                var rowsAffected = await _context.Database.ExecuteSqlRawAsync(
+                    "DELETE FROM prescriptions WHERE \"Id\" = {0}", id);
+
+                // Проверяем, был ли удален рецепт
+                if (rowsAffected == 0)
+                {
+                    await transaction.RollbackAsync();
+                    TempData["Error"] = "Рецепт не найден.";
+                    return RedirectToAction("Details", new { id });
+                }
+
+                // Фиксируем транзакцию
+                await transaction.CommitAsync();
+
+                TempData["Success"] = "Рецепт и его позиции успешно удалены.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                // В случае ошибки показываем сообщение
+                TempData["Error"] = $"Ошибка при удалении рецепта: {ex.Message}";
                 return RedirectToAction("Details", new { id });
             }
-
-            await _context.Database.ExecuteSqlRawAsync("DELETE FROM prescriptions WHERE \"Id\" = {0}", id);
-            return RedirectToAction("Index");
-        }
-
-
-        private bool PrescriptionExists(long id)
-        {
-            return _context.Prescriptions
-                .FromSqlRaw("SELECT * FROM prescriptions WHERE \"Id\" = {0}", id)
-                .Any();
         }
     }
+
 }

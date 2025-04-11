@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel;
 using WebAppPharmacy.Models.Dictionaries;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace WebAppPharmacy.Models
 {
@@ -33,9 +34,10 @@ namespace WebAppPharmacy.Models
 
         public long ProductId { get; set; }
         public long StatusId { get; set; }
-
+        [ValidateNever]
         // Навигация
         public Product Product { get; set; } = null!;
+        [ValidateNever]
         public BatchStatus Status { get; set; } = null!;
         public ICollection<SaleDetail> SaleDetails { get; set; } = new List<SaleDetail>();
         public ICollection<UnitItem> UnitItems { get; set; } = new List<UnitItem>();

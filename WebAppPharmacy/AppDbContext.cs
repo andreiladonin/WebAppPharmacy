@@ -45,6 +45,7 @@ namespace WebAppPharmacy
             modelBuilder.Entity<SaleViewModel>().HasNoKey().ToView(null);
             modelBuilder.Entity<ProductViewModel>().HasNoKey().ToView(null);
             modelBuilder.Entity<BatchViewModel>().HasNoKey().ToView(null);
+            modelBuilder.Entity<PrescriptionViewModel>().HasNoKey().ToView(null);
         }
 
     }

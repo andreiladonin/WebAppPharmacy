@@ -12,8 +12,8 @@ using WebAppPharmacy;
 namespace WebAppPharmacy.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250409101550_UpdateProductModel")]
-    partial class UpdateProductModel
+    [Migration("20250409185045_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

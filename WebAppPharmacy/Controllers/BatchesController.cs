@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using WebAppPharmacy;
 using WebAppPharmacy.Models;
+using WebAppPharmacy.Models.DTO;
 using WebAppPharmacy.Models.VM;
 
 namespace WebAppPharmacy.Controllers
@@ -55,7 +56,8 @@ namespace WebAppPharmacy.Controllers
                 ViewData["StatusId"] = new SelectList(_context.BatchStatuses.ToList(), "Id", "StatusName", batch.StatusId);
                 return View(batch);
             }
-
+            batch.SupplyDate = DateTime.SpecifyKind(batch.SupplyDate, DateTimeKind.Utc);
+            batch.ExpirationDate = DateTime.SpecifyKind(batch.ExpirationDate, DateTimeKind.Utc);
             var sql = @"
             INSERT INTO batches 
             (""ProductId"", ""BatchNumber"", ""SupplyDate"", ""ExpirationDate"", 
@@ -99,6 +101,9 @@ namespace WebAppPharmacy.Controllers
         {
             if (id != batch.Id) return NotFound();
 
+            batch.SupplyDate = DateTime.SpecifyKind(batch.SupplyDate, DateTimeKind.Utc);
+            batch.ExpirationDate = DateTime.SpecifyKind(batch.ExpirationDate, DateTimeKind.Utc);
+
             if (!ModelState.IsValid)
             {
                 ViewData["ProductId"] = new SelectList(_context.Products.ToList(), "Id", "Title", batch.ProductId);
@@ -129,20 +134,260 @@ namespace WebAppPharmacy.Controllers
         }
 
         // GET: Batches/Details/5
-        public async Task<IActionResult> Details(long? id)
+        public async Task<IActionResult> Details(long id)
         {
-            if (id == null) return NotFound();
+            try
+            {
+                var batch = await _context.Batches
+                    .FromSqlRaw(
+                        "SELECT b.\"Id\", b.\"BatchNumber\", b.\"RemainingQuantity\", b.\"ExpirationDate\", " +
+                        "b.\"ProductId\", p.\"Title\", p.\"Price\", p.\"IsMarked\" " +
+                        "FROM batches b " +
+                        "JOIN products p ON b.\"ProductId\" = p.\"Id\" " +
+                        "WHERE b.\"Id\" = {0}", id)
+                    .Select(b => new
+                    {
+                        b.Id,
+                        b.BatchNumber,
+                        b.RemainingQuantity,
+                        b.ExpirationDate,
+                        ProductTitle = b.Product.Title,
+                        ProductPrice = b.Product.Price,
+                        IsMarked = b.Product.IsMarked
+                    })
+                    .FirstOrDefaultAsync();
 
-            var batch = await _context.Batches
-                .FromSqlRaw("SELECT * FROM batches WHERE \"Id\" = {0}", id)
-                .FirstOrDefaultAsync();
+                if (batch == null)
+                {
+                    TempData["Error"] = "Партия не найдена.";
+                    return RedirectToAction(nameof(Index));
+                }
 
-            if (batch == null) return NotFound();
+                var unitItems = await _context.UnitItems
+                    .FromSqlRaw(
+                        "SELECT \"Id\", \"QrCode\", \"BatchId\" " +
+                        "FROM unit_items " +
+                        "WHERE \"BatchId\" = {0}", id)
+                    .Select(u => new UnitItemDto
+                    {
+                        Id = u.Id,
+                        QrCode = u.QrCode
+                    })
+                    .ToListAsync();
 
-            batch.Product = await _context.Products.FirstOrDefaultAsync(p => p.Id == batch.ProductId);
-            batch.Status = await _context.BatchStatuses.FirstOrDefaultAsync(s => s.Id == batch.StatusId);
+                var model = new BatchDetailsViewModel
+                {
+                    BatchId = id,
+                    BatchNumber = batch.BatchNumber,
+                    ProductTitle = batch.ProductTitle,
+                    ProductPrice = batch.ProductPrice,
+                    RemainingQuantity = batch.RemainingQuantity,
+                    ExpirationDate = batch.ExpirationDate,
+                    IsMarked = batch.IsMarked,
+                    UnitItems = unitItems
+                };
 
-            return View(batch);
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Ошибка при загрузке данных: {ex.Message}";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // POST: Batches/AddUnitItem
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddUnitItem(long batchId, string qrCode)
+        {
+            try
+            {
+                var batchData = await _context.Batches
+                    .FromSqlRaw(
+                        "SELECT b.\"Id\", b.\"RemainingQuantity\", b.\"Quantity\", b.\"ProductId\", p.\"IsMarked\" " +
+                        "FROM batches b " +
+                        "JOIN products p ON b.\"ProductId\" = p.\"Id\" " +
+                        "WHERE b.\"Id\" = {0}", batchId)
+                    .Select(b => new
+                    {
+                        b.Id,
+                        b.RemainingQuantity,
+                        b.Quantity,
+                        IsMarked = b.Product.IsMarked
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (batchData == null)
+                {
+                    TempData["Error"] = "Партия не найдена.";
+                    return RedirectToAction(nameof(Details), new { id = batchId });
+                }
+
+                if (!batchData.IsMarked)
+                {
+                    TempData["Error"] = "Товар не маркированный, нельзя добавить единицу.";
+                    return RedirectToAction(nameof(Details), new { id = batchId });
+                }
+
+                var currentUnitCount = await _context.UnitItems
+                    .FromSqlRaw("SELECT COUNT(*) FROM unit_items WHERE \"BatchId\" = {0}", batchId)
+                    .Select(u => u.Id)
+                    .CountAsync();
+
+                if (currentUnitCount >= batchData.Quantity)
+                {
+                    TempData["Error"] = "Количество единиц не может превышать исходное количество партии.";
+                    return RedirectToAction(nameof(Details), new { id = batchId });
+                }
+
+                var qrExists = await _context.UnitItems
+                    .FromSqlRaw("SELECT * FROM unit_items WHERE \"QrCode\" = {0}", qrCode)
+                    .AnyAsync();
+
+                if (qrExists)
+                {
+                    TempData["Error"] = "QR-код уже существует.";
+                    return RedirectToAction(nameof(Details), new { id = batchId });
+                }
+
+                await _context.Database.ExecuteSqlRawAsync(
+                    "INSERT INTO unit_items (\"QrCode\", \"BatchId\") VALUES ({0}, {1})",
+                    qrCode, batchId);
+
+                await _context.Database.ExecuteSqlRawAsync(
+                    "UPDATE batches SET \"RemainingQuantity\" = \"RemainingQuantity\" + 1 WHERE \"Id\" = {0}",
+                    batchId);
+
+                TempData["Success"] = $"Упаковка с QR-кодом {qrCode} добавлена.";
+                return RedirectToAction(nameof(Details), new { id = batchId });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Ошибка при добавлении упаковки: {ex.Message}";
+                return RedirectToAction(nameof(Details), new { id = batchId });
+            }
+        }
+
+        // POST: Batches/EditUnitItem
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditUnitItem(long id, long batchId, string qrCode)
+        {
+            try
+            {
+                var batchData = await _context.Batches
+                    .FromSqlRaw(
+                        "SELECT b.\"Id\", b.\"ProductId\", p.\"IsMarked\" " +
+                        "FROM batches b " +
+                        "JOIN products p ON b.\"ProductId\" = p.\"Id\" " +
+                        "WHERE b.\"Id\" = {0}", batchId)
+                    .Select(b => new
+                    {
+                        b.Id,
+                        IsMarked = b.Product.IsMarked
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (batchData == null)
+                {
+                    TempData["Error"] = "Партия не найдена.";
+                    return RedirectToAction(nameof(Details), new { id = batchId });
+                }
+
+                if (!batchData.IsMarked)
+                {
+                    TempData["Error"] = "Товар не маркированный.";
+                    return RedirectToAction(nameof(Details), new { id = batchId });
+                }
+
+                var qrExists = await _context.UnitItems
+                    .FromSqlRaw(
+                        "SELECT * FROM unit_items WHERE \"QrCode\" = {0} AND \"Id\" != {1}",
+                        qrCode, id)
+                    .AnyAsync();
+
+                if (qrExists)
+                {
+                    TempData["Error"] = "QR-код уже существует.";
+                    return RedirectToAction(nameof(Details), new { id = batchId });
+                }
+
+                var rowsAffected = await _context.Database.ExecuteSqlRawAsync(
+                    "UPDATE unit_items SET \"QrCode\" = {0} WHERE \"Id\" = {1} AND \"BatchId\" = {2}",
+                    qrCode, id, batchId);
+
+                if (rowsAffected == 0)
+                {
+                    TempData["Error"] = "Единица не найдена.";
+                    return RedirectToAction(nameof(Details), new { id = batchId });
+                }
+
+                TempData["Success"] = $"QR-код обновлен на {qrCode}.";
+                return RedirectToAction(nameof(Details), new { id = batchId });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Ошибка при редактировании: {ex.Message}";
+                return RedirectToAction(nameof(Details), new { id = batchId });
+            }
+        }
+
+        // POST: Batches/DeleteUnitItem
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteUnitItem(long id, long batchId)
+        {
+            try
+            {
+                var batchData = await _context.Batches
+                    .FromSqlRaw(
+                        "SELECT b.\"Id\", b.\"RemainingQuantity\", b.\"ProductId\", p.\"IsMarked\" " +
+                        "FROM batches b " +
+                        "JOIN products p ON b.\"ProductId\" = p.\"Id\" " +
+                        "WHERE b.\"Id\" = {0}", batchId)
+                    .Select(b => new
+                    {
+                        b.Id,
+                        b.RemainingQuantity,
+                        IsMarked = b.Product.IsMarked
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (batchData == null)
+                {
+                    TempData["Error"] = "Партия не найдена.";
+                    return RedirectToAction(nameof(Details), new { id = batchId });
+                }
+
+                if (!batchData.IsMarked)
+                {
+                    TempData["Error"] = "Товар не маркированный.";
+                    return RedirectToAction(nameof(Details), new { id = batchId });
+                }
+
+                var rowsAffected = await _context.Database.ExecuteSqlRawAsync(
+                    "DELETE FROM unit_items WHERE \"Id\" = {0} AND \"BatchId\" = {1}",
+                    id, batchId);
+
+                if (rowsAffected == 0)
+                {
+                    TempData["Error"] = "Единица не найдена.";
+                    return RedirectToAction(nameof(Details), new { id = batchId });
+                }
+
+                await _context.Database.ExecuteSqlRawAsync(
+                    "UPDATE batches SET \"RemainingQuantity\" = \"RemainingQuantity\" - 1 WHERE \"Id\" = {0}",
+                    batchId);
+
+                TempData["Success"] = "Упаковка удалена.";
+                return RedirectToAction(nameof(Details), new { id = batchId });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Ошибка при удалении: {ex.Message}";
+                return RedirectToAction(nameof(Details), new { id = batchId });
+            }
         }
 
         // GET: Batches/Delete/5

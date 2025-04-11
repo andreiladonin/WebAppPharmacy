@@ -14,10 +14,7 @@ namespace WebAppPharmacy.Models
 
         [DisplayName("Партия")]
         public long BatchId { get; set; }
-
-        [DisplayName("Статус")]
-        public string Status { get; set; } = null!;
-
+        public bool IsSold { get; set; }
         // Навигация
         public Batch Batch { get; set; } = null!;
     }

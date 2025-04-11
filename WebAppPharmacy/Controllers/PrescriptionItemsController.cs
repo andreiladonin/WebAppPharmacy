@@ -37,7 +37,7 @@ namespace WebAppPharmacy.Controllers
             if (ModelState.IsValid)
             {
                 await _context.Database.ExecuteSqlRawAsync(@"
-                INSERT INTO prescription_items (PrescriptionId, ProductId, Quantity, DispensedQuantity)
+                INSERT INTO prescription_items (""PrescriptionId"", ""ProductId"", ""Quantity"", ""DispensedQuantity"")
                 VALUES ({0}, {1}, {2}, {3})",
                     item.PrescriptionId,
                     item.ProductId,
@@ -77,13 +77,13 @@ namespace WebAppPharmacy.Controllers
             if (ModelState.IsValid)
             {
                 await _context.Database.ExecuteSqlRawAsync(@"
-                UPDATE prescription_items 
-                SET ProductId = {0}, Quantity = {1}, DispensedQuantity = {2} 
-                WHERE Id = {3}",
-                    item.ProductId,
-                    item.Quantity,
-                    item.DispensedQuantity,
-                    item.Id);
+                    UPDATE prescription_items 
+                    SET ""ProductId"" = {0}, ""Quantity"" = {1}, ""DispensedQuantity"" = {2}
+                    WHERE ""Id"" = {3}",
+                        item.ProductId,
+                        item.Quantity,
+                        item.DispensedQuantity,
+                        item.Id);
 
                 return RedirectToAction("Details", "Prescriptions", new { id = item.PrescriptionId });
             }

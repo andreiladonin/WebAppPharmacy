@@ -1,59 +1,69 @@
 ﻿@model WebAppPharmacy.Models.Prescription
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Редактирование рецепта";
 }
 
-<h1>Edit</h1>
+<h2 class="mb-4">Редактировать рецепт</h2>
 
-<h4>Prescription</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="DoctorName" class="control-label"></label>
-                <input asp-for="DoctorName" class="form-control" />
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-floating mb-3">
+                <input asp-for="DoctorName" class="form-control" placeholder=" " />
+                <label asp-for="DoctorName"></label>
                 <span asp-validation-for="DoctorName" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="PrescriptionCode" class="control-label"></label>
-                <input asp-for="PrescriptionCode" class="form-control" />
+
+            <div class="form-floating mb-3">
+                <input asp-for="PrescriptionCode" class="form-control" placeholder=" " />
+                <label asp-for="PrescriptionCode"></label>
                 <span asp-validation-for="PrescriptionCode" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="IssueDate" class="control-label"></label>
-                <input asp-for="IssueDate" class="form-control" />
+
+            <div class="form-floating mb-3">
+                <input asp-for="IssueDate" class="form-control" type="date" />
+                <label asp-for="IssueDate"></label>
                 <span asp-validation-for="IssueDate" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="ExpiryDate" class="control-label"></label>
-                <input asp-for="ExpiryDate" class="form-control" />
+
+            <div class="form-floating mb-3">
+                <input asp-for="ExpiryDate" class="form-control" type="date" />
+                <label asp-for="ExpiryDate"></label>
                 <span asp-validation-for="ExpiryDate" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="ClientId" class="control-label"></label>
-                <select asp-for="ClientId" class="form-control" asp-items="ViewBag.ClientId"></select>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-floating mb-3">
+                <select asp-for="ClientId" class="form-select" asp-items="ViewBag.ClientId">
+                    <option value="">-- выберите клиента --</option>
+                </select>
+                <label asp-for="ClientId">Клиент</label>
                 <span asp-validation-for="ClientId" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="StatusId" class="control-label"></label>
-                <select asp-for="StatusId" class="form-control" asp-items="ViewBag.StatusId"></select>
+
+            <div class="form-floating mb-3">
+                <select asp-for="StatusId" class="form-select" asp-items="ViewBag.StatusId">
+                    <option value="">-- выберите статус --</option>
+                </select>
+                <label asp-for="StatusId">Статус рецепта</label>
                 <span asp-validation-for="StatusId" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <div class="mt-4">
+        <button type="submit" class="btn btn-success">💾 Сохранить</button>
+        <a asp-action="Index" class="btn btn-secondary">Назад</a>
+    </div>
+</form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

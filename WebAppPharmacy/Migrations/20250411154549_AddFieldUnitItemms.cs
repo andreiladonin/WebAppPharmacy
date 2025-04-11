@@ -5,33 +5,33 @@
 namespace WebAppPharmacy.Migrations
 {
     /// <inheritdoc />
-    public partial class removeFieldsEmployees : Migration
+    public partial class AddFieldUnitItemms : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Email",
-                table: "employees");
+                name: "Status",
+                table: "unit_items");
 
-            migrationBuilder.DropColumn(
-                name: "Phone",
-                table: "employees");
+            migrationBuilder.AddColumn<bool>(
+                name: "IsSold",
+                table: "unit_items",
+                type: "boolean",
+                nullable: false,
+                defaultValue: false);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "Email",
-                table: "employees",
-                type: "text",
-                nullable: false,
-                defaultValue: "");
+            migrationBuilder.DropColumn(
+                name: "IsSold",
+                table: "unit_items");
 
             migrationBuilder.AddColumn<string>(
-                name: "Phone",
-                table: "employees",
+                name: "Status",
+                table: "unit_items",
                 type: "text",
                 nullable: false,
                 defaultValue: "");

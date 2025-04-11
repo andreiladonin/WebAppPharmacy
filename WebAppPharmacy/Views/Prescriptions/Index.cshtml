@@ -1,65 +1,43 @@
-﻿@model IEnumerable<WebAppPharmacy.Models.Prescription>
+﻿@model IEnumerable<WebAppPharmacy.Models.VM.PrescriptionViewModel>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Рецепты";
 }
 
-<h1>Index</h1>
+<h2 class="mb-4">Список рецептов</h2>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">➕ Новый рецепт</a>
 </p>
-<table class="table">
-    <thead>
+
+<table class="table table-bordered table-striped table-hover">
+    <thead class="table-dark">
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.DoctorName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PrescriptionCode)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IssueDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ExpiryDate)
-            </th>
-            <th>
-                 Клиент
-            </th>
-            <th>
-                 Статус
-            </th>
-            <th></th>
+            <th>Врач</th>
+            <th>Код</th>
+            <th>Дата выдачи</th>
+            <th>Срок действия</th>
+            <th>Клиент</th>
+            <th>Статус</th>
+            <th class="text-center">Действия</th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.DoctorName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PrescriptionCode)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IssueDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ExpiryDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Client.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status.StatusName)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.DoctorName</td>
+                <td>@item.PrescriptionCode</td>
+                <td>@item.IssueDate.ToShortDateString()</td>
+                <td>@(item.ExpiryDate?.ToShortDateString() ?? "—")</td>
+                <td>@item.ClientName</td>
+                <td>@item.StatusName</td>
+                <td class="text-center">
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">✏️</a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">🔍</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">🗑️</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
