@@ -9,6 +9,8 @@ namespace WebAppPharmacy.Models
     [DisplayName("Партия товара")]
     public class Batch
     {
+        internal DateTime? ExpiryDate;
+
         public long Id { get; set; }
 
         [DisplayName("Дата поставки")]
@@ -33,12 +35,9 @@ namespace WebAppPharmacy.Models
         public string? StorageConditions { get; set; }
 
         public long ProductId { get; set; }
-        public long StatusId { get; set; }
         [ValidateNever]
         // Навигация
         public Product Product { get; set; } = null!;
-        [ValidateNever]
-        public BatchStatus Status { get; set; } = null!;
         public ICollection<SaleDetail> SaleDetails { get; set; } = new List<SaleDetail>();
         public ICollection<UnitItem> UnitItems { get; set; } = new List<UnitItem>();
     }

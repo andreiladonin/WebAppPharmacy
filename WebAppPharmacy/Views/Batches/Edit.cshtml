@@ -63,14 +63,6 @@
                 <label asp-for="PurchasePrice"></label>
                 <span asp-validation-for="PurchasePrice" class="text-danger"></span>
             </div>
-
-            <div class="form-floating mb-3">
-                <select asp-for="StatusId" class="form-select" asp-items="ViewBag.StatusId">
-                    <option value="">-- выберите статус --</option>
-                </select>
-                <label asp-for="StatusId">Статус</label>
-                <span asp-validation-for="StatusId" class="text-danger"></span>
-            </div>
         </div>
     </div>
 

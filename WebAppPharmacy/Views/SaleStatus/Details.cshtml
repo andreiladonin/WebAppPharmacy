@@ -4,21 +4,28 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<div class="container mt-4">
+    <h1>Статус продажи: <span class="text-primary">@Html.DisplayFor(model => model.StatusName)</span></h1>
 
-<div>
-    <h4>SaleStatus</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StatusName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StatusName)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <div class="mt-3">
+        <h4>SaleStatus</h4>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.StatusName)
+            </dt>
+            <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.StatusName)
+            </dd>
+        </dl>
+    </div>
+
+    <div class="mt-4">
+        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary">
+            <i class="bi bi-pencil me-2"></i> Редактировать
+        </a>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left-circle me-2"></i> Назад к списку
+        </a>
+    </div>
 </div>

@@ -1,59 +1,61 @@
-﻿@model IEnumerable<WebAppPharmacy.Models.Sale>
+﻿@using WebAppPharmacy.Models.VM
+@model SaleIndexViewModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Список продаж";
+    var sort = Model.SortOrder ?? "";
+    string GetSortLink(string column) => Url.Action("Index", new { search = Model.Search, sortOrder = column, page = Model.CurrentPage });
 }
 
-<h1>Index</h1>
+<h2 class="mb-4">Список продаж</h2>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
+<form method="get" class="mb-3 d-flex gap-2">
+    <input type="text" name="search" value="@Model.Search" class="form-control w-25" placeholder="Поиск по клиенту или сотруднику..." />
+    <button type="submit" class="btn btn-primary">Поиск</button>
+    <a asp-action="Index" class="btn btn-secondary">Сбросить</a>
+</form>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.SaleDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Total)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Client)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Employee)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
+            <th><a href="@GetSortLink("id")">ID</a></th>
+            <th><a href="@GetSortLink("date")">Дата продажи</a></th>
+            <th><a href="@GetSortLink("client")">Клиент</a></th>
+            <th><a href="@GetSortLink("employee")">Сотрудник</a></th>
+            <th><a href="@GetSortLink("status")">Статус</a></th>
+            <th><a href="@GetSortLink("total")">Сумма</a></th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.SaleDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Total)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Client.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Employee.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var sale in Model.Sales)
+        {
+            <tr>
+                <td>@sale.Id</td>
+                <td>@sale.SaleDate.ToString("dd.MM.yyyy HH:mm")</td>
+                <td>@sale.ClientName</td>
+                <td>@sale.EmployeeName</td>
+                <td>@sale.StatusName</td>
+                <td>@sale.Total ₽</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@sale.Id" class="btn btn-sm btn-info">Подробнее</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
+
+<div class="d-flex justify-content-between align-items-center">
+    <a asp-action="Create" class="btn btn-success">Создать новую продажу</a>
+
+    <nav>
+        <ul class="pagination mb-0">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { page = i, search = Model.Search, sortOrder = Model.SortOrder })">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>

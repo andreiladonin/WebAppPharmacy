@@ -1,0 +1,35 @@
+﻿@model List<WebAppPharmacy.Models.VM.SupplierOrderListItemViewModel>
+
+<h2 class="mb-4">Список заказов поставщикам</h2>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>Дата заказа</th>
+            <th>Дата доставки</th>
+            <th>Компания</th>
+            <th>Статус</th>
+            <th>Сумма</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in Model)
+        {
+            <tr>
+                <td>@order.Id</td>
+                <td>@order.OrderDate.ToString("dd.MM.yyyy")</td>
+                <td>@(order.DeliveryDate?.ToString("dd.MM.yyyy") ?? "-")</td>
+                <td>@order.SupplierTitle</td>
+                <td>@order.StatusName</td>
+                <td>@order.TotalAmount.ToString("F2") ₽</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-info">Подробнее</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Create" class="btn btn-success mt-3">Создать заказ</a>

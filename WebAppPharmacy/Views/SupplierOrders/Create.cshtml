@@ -1,0 +1,119 @@
+﻿@model SupplierOrderCreateViewModel
+@using Microsoft.AspNetCore.Html
+@using Newtonsoft.Json
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using WebAppPharmacy.Models.VM
+
+@{
+    ViewData["Title"] = "Создание заказа поставщику";
+
+    var products = ViewData["Products"] as List<SelectListItem> ?? new();
+    var productsJson = new HtmlString(JsonConvert.SerializeObject(
+        products.Select(p => new { id = p.Value, title = p.Text })
+    ));
+}
+
+<h2>Создание заказа поставщику</h2>
+
+<form asp-action="Create" method="post">
+    <div class="mb-3">
+        <label asp-for="OrderDate" class="form-label"></label>
+        <input asp-for="OrderDate" class="form-control" />
+        <span asp-validation-for="OrderDate" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="SupplierId" class="form-label"></label>
+        <select asp-for="SupplierId" class="form-select" asp-items="ViewBag.Suppliers">
+            <option value="">Выберите поставщика</option>
+        </select>
+        <span asp-validation-for="SupplierId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="StatusId" class="form-label"></label>
+        <select asp-for="StatusId" class="form-select" asp-items="ViewBag.Statuses">
+            <option value="">Выберите статус</option>
+        </select>
+        <span asp-validation-for="StatusId" class="text-danger"></span>
+    </div>
+
+    <hr />
+    <h4>Детали заказа</h4>
+
+    <table class="table" id="details-table">
+        <thead>
+            <tr>
+                <th>Товар</th>
+                <th>Количество</th>
+                <th>Цена</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <button type="button" class="btn btn-outline-primary" onclick="addRow()">Добавить позицию</button>
+
+    <div class="mt-3">
+        <strong>Итого: </strong><span id="total">0.00</span> ₽
+        <input type="hidden" asp-for="TotalAmount" id="TotalAmount" />
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-success">Создать заказ</button>
+        <a asp-action="Index" class="btn btn-secondary">Назад</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const products = @productsJson;
+        let index = 0;
+
+        function addRow() {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <select name="Details[${index}].ProductId" class="form-select">
+                        ${products.map(p => `<option value="${p.id}">${p.title}</option>`).join("")}
+                    </select>
+                </td>
+                <td>
+                    <input type="number" name="Details[${index}].Quantity" class="form-control" min="1" value="1" onchange="updateTotal()" />
+                </td>
+                <td>
+                    <input type="number" name="Details[${index}].Price" class="form-control" step="0.01" min="0" value="0.00" onchange="updateTotal()" />
+                </td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)">Удалить</button>
+                </td>
+            `;
+            document.querySelector("#details-table tbody").appendChild(row);
+            index++;
+            updateTotal();
+        }
+
+        function removeRow(button) {
+            button.closest("tr").remove();
+            updateTotal();
+        }
+
+        function updateTotal() {
+            let total = 0;
+            document.querySelectorAll("#details-table tbody tr").forEach(row => {
+                const qty = parseFloat(row.querySelector("input[name*='.Quantity']").value) || 0;
+                const price = parseFloat(row.querySelector("input[name*='.Price']").value) || 0;
+                total += qty * price;
+            });
+            document.getElementById("total").innerText = total.toFixed(2);
+            document.getElementById("TotalAmount").value = total.toFixed(2);
+        }
+
+        // Добавим одну строку по умолчанию
+        window.addEventListener("DOMContentLoaded", () => {
+            addRow();
+        });
+    </script>
+}

@@ -49,9 +49,6 @@ namespace WebAppPharmacy.Migrations
                     b.Property<int>("RemainingQuantity")
                         .HasColumnType("integer");
 
-                    b.Property<long>("StatusId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("StorageConditions")
                         .HasColumnType("text");
 
@@ -61,8 +58,6 @@ namespace WebAppPharmacy.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("StatusId");
 
                     b.ToTable("batches");
                 });
@@ -111,23 +106,6 @@ namespace WebAppPharmacy.Migrations
                     b.ToTable("clients");
                 });
 
-            modelBuilder.Entity("WebAppPharmacy.Models.Dictionaries.BatchStatus", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("StatusName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("batch_statuses");
-                });
-
             modelBuilder.Entity("WebAppPharmacy.Models.Dictionaries.MeasurementUnit", b =>
                 {
                     b.Property<long>("Id")
@@ -147,23 +125,6 @@ namespace WebAppPharmacy.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("measurement_units");
-                });
-
-            modelBuilder.Entity("WebAppPharmacy.Models.Dictionaries.OrderDetailStatus", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("StatusName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("order_detail_statuses");
                 });
 
             modelBuilder.Entity("WebAppPharmacy.Models.Dictionaries.PrescriptionStatus", b =>
@@ -258,16 +219,11 @@ namespace WebAppPharmacy.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
-                    b.Property<long>("StatusId")
-                        .HasColumnType("bigint");
-
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("StatusId");
 
                     b.ToTable("order_details");
                 });
@@ -459,11 +415,12 @@ namespace WebAppPharmacy.Migrations
                     b.Property<long>("BatchId")
                         .HasColumnType("bigint");
 
-                    b.Property<decimal?>("Discount")
-                        .HasColumnType("numeric");
-
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
+
+                    b.Property<string>("QrCode")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
@@ -569,6 +526,28 @@ namespace WebAppPharmacy.Migrations
                     b.ToTable("unit_items");
                 });
 
+            modelBuilder.Entity("WebAppPharmacy.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
+                });
+
             modelBuilder.Entity("WebAppPharmacy.Models.VM.BatchViewModel", b =>
                 {
                     b.Property<string>("BatchNumber")
@@ -593,10 +572,6 @@ namespace WebAppPharmacy.Migrations
 
                     b.Property<int>("RemainingQuantity")
                         .HasColumnType("integer");
-
-                    b.Property<string>("StatusName")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<DateTime>("SupplyDate")
                         .HasColumnType("timestamp with time zone");
@@ -704,6 +679,122 @@ namespace WebAppPharmacy.Migrations
                     b.ToView(null, (string)null);
                 });
 
+            modelBuilder.Entity("WebAppPharmacy.Models.VM.SaleDetailItemViewModel", b =>
+                {
+                    b.Property<string>("BatchNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ExpirationDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("ProductTitle")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("QrCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
+            modelBuilder.Entity("WebAppPharmacy.Models.VM.SaleDetailViewModel", b =>
+                {
+                    b.Property<string>("ClientName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("EmployeeName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("SaleDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("StatusName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("numeric");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
+            modelBuilder.Entity("WebAppPharmacy.Models.VM.SaleItemViewModel", b =>
+                {
+                    b.Property<long>("BatchId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsMarked")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsRecipe")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("QrCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<long?>("UnitItemId")
+                        .HasColumnType("bigint");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
+            modelBuilder.Entity("WebAppPharmacy.Models.VM.SaleListItemViewModel", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ClientName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("EmployeeName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("SaleDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("StatusName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SaleListItemViewModel");
+                });
+
             modelBuilder.Entity("WebAppPharmacy.Models.VM.SaleViewModel", b =>
                 {
                     b.Property<string>("ClientName")
@@ -732,6 +823,33 @@ namespace WebAppPharmacy.Migrations
                     b.ToView(null, (string)null);
                 });
 
+            modelBuilder.Entity("WebAppPharmacy.Models.VM.SupplierOrderListItemViewModel", b =>
+                {
+                    b.Property<DateTime?>("DeliveryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("StatusName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SupplierTitle")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("numeric");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
             modelBuilder.Entity("WebAppPharmacy.Models.Batch", b =>
                 {
                     b.HasOne("WebAppPharmacy.Models.Product", "Product")
@@ -740,15 +858,7 @@ namespace WebAppPharmacy.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebAppPharmacy.Models.Dictionaries.BatchStatus", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Product");
-
-                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("WebAppPharmacy.Models.OrderDetail", b =>
@@ -765,17 +875,9 @@ namespace WebAppPharmacy.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebAppPharmacy.Models.Dictionaries.OrderDetailStatus", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Order");
 
                     b.Navigation("Product");
-
-                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("WebAppPharmacy.Models.Prescription", b =>

@@ -1,48 +1,53 @@
-﻿@model WebAppPharmacy.Models.Sale
+﻿@model WebAppPharmacy.Models.VM.SaleDetailViewModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Детали продажи";
 }
 
-<h1>Details</h1>
+<h2 class="mb-4">Детали продажи #@Model.Id</h2>
 
-<div>
-    <h4>Sale</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.SaleDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.SaleDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Total)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Total)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Client)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Client.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Employee)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Employee.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status.Id)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+<dl class="row">
+    <dt class="col-sm-3">Дата</dt>
+    <dd class="col-sm-9">@Model.SaleDate.ToString("dd.MM.yyyy HH:mm")</dd>
+
+    <dt class="col-sm-3">Клиент</dt>
+    <dd class="col-sm-9">@Model.ClientName</dd>
+
+    <dt class="col-sm-3">Сотрудник</dt>
+    <dd class="col-sm-9">@Model.EmployeeName</dd>
+
+    <dt class="col-sm-3">Статус</dt>
+    <dd class="col-sm-9">@Model.StatusName</dd>
+
+    <dt class="col-sm-3">Сумма</dt>
+    <dd class="col-sm-9">@Model.Total ₽</dd>
+</dl>
+
+<h4 class="mt-4">Товары</h4>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Товар</th>
+            <th>Партия</th>
+            <th>Срок годности</th>
+            <th>Кол-во</th>
+            <th>Цена</th>
+            <th>QR-код</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@item.ProductTitle</td>
+                <td>@item.BatchNumber</td>
+                <td>@item.ExpirationDate?.ToString("dd.MM.yyyy")</td>
+                <td>@item.Quantity</td>
+                <td>@item.Price ₽</td>
+                <td>@(string.IsNullOrEmpty(item.QrCode) ? "—" : item.QrCode)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary mt-3">Назад к списку</a>

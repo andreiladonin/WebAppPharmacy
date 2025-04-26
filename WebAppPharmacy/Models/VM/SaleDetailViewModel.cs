@@ -2,12 +2,15 @@
 {
     public class SaleDetailViewModel
     {
+
         public long Id { get; set; }
-        public long SaleId { get; set; }
-        public string BatchNumber { get; set; } = null!;
-        public int Quantity { get; set; }
-        public decimal Price { get; set; }
-        public decimal? Discount { get; set; }
+        public DateTime SaleDate { get; set; }
+        public string ClientName { get; set; }
+        public string EmployeeName { get; set; }
+        public string StatusName { get; set; }
+        public decimal Total { get; set; }
+
+        public List<SaleDetailItemViewModel> Items { get; set; } = new();
     }
 
 }

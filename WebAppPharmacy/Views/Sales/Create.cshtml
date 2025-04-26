@@ -1,50 +1,209 @@
-﻿@model WebAppPharmacy.Models.Sale
+﻿@using System.Globalization
+@using System.Text.Json
+@using WebAppPharmacy.Models.VM
+
+@model SaleCreateViewModel
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Создание продажи";
 }
 
-<h1>Create</h1>
+<h2 class="mb-4">Создание продажи</h2>
 
-<h4>Sale</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="SaleDate" class="control-label"></label>
-                <input asp-for="SaleDate" class="form-control" />
-                <span asp-validation-for="SaleDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Total" class="control-label"></label>
-                <input asp-for="Total" class="form-control" />
-                <span asp-validation-for="Total" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ClientId" class="control-label"></label>
-                <select asp-for="ClientId" class ="form-control" asp-items="ViewBag.ClientId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="EmployeeId" class="control-label"></label>
-                <select asp-for="EmployeeId" class ="form-control" asp-items="ViewBag.EmployeeId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="StatusId" class="control-label"></label>
-                <select asp-for="StatusId" class ="form-control" asp-items="ViewBag.StatusId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <!-- Клиент -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="ClientId" class="form-label">Клиент</label>
+            <select asp-for="ClientId" class="form-select" asp-items="Model.Clients">
+                <option value="">-- Выберите клиента --</option>
+            </select>
+            <span asp-validation-for="ClientId" class="text-danger"></span>
+        </div>
+        <!-- Сотрудник -->
+        <div class="col-md-4">
+            <label asp-for="EmployeeId" class="form-label">Сотрудник</label>
+            <select asp-for="EmployeeId" class="form-select" asp-items="Model.Employees">
+                <option value="">-- Выберите сотрудника --</option>
+            </select>
+            <span asp-validation-for="EmployeeId" class="text-danger"></span>
+        </div>
+        <!-- Статус -->
+        <div class="col-md-4">
+            <label asp-for="StatusId" class="form-label">Статус</label>
+            <select asp-for="StatusId" class="form-select" asp-items="Model.Statuses">
+                <option value="">-- Выберите статус --</option>
+            </select>
+            <span asp-validation-for="StatusId" class="text-danger"></span>
+        </div>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <hr />
+
+    <div class="mb-3 position-relative">
+        <label class="form-label">Добавить товар</label>
+        <input type="text" id="productSearch" class="form-control" placeholder="Начните вводить название товара...">
+        <div id="searchDropdown" class="list-group position-absolute w-100 shadow" style="z-index: 1000; display: none; max-height: 200px; overflow-y: auto;"></div>
+    </div>
+
+    <!-- Таблица товаров -->
+    <table class="table table-bordered table-hover mt-3" id="itemsTable">
+        <thead class="table-light">
+            <tr>
+                <th>Товар</th>
+                <th>Партия</th>
+                <th>Срок годности</th>
+                <th>Цена</th>
+                <th>Остаток</th>
+                <th>Кол-во</th>
+                <th>QR-код</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="itemsBody"></tbody>
+    </table>
+
+    <div class="mb-3">
+        <h5>Общая сумма: <span id="totalAmount">0.00</span> ₽</h5>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <a asp-action="Index" class="btn btn-secondary">Назад</a>
+        <input type="submit" value="Создать" class="btn btn-success" />
+    </div>
+</form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        let itemsCount = 0;
+        let totalAmount = 0;
+        let usedQrCodes = new Set();
+
+        let allProducts = [];
+        @foreach (var product in Model.AvailableProducts)
+        {
+            <text>
+                        allProducts.push({
+                            batchId: @Html.Raw(JsonSerializer.Serialize(product.BatchId)),
+                            title: @Html.Raw(JsonSerializer.Serialize(product.ProductTitle)),
+                            batch: @Html.Raw(JsonSerializer.Serialize(product.BatchNumber)),
+                            exp: @Html.Raw(JsonSerializer.Serialize(product.ExpirationDate?.ToString("dd.MM.yyyy") ?? "Нет")),
+                            price: @Html.Raw(JsonSerializer.Serialize(product.Price.ToString("F2", CultureInfo.InvariantCulture))),
+                            remain: @Html.Raw(JsonSerializer.Serialize(product.RemainingQuantity)),
+                            isMarked: @Html.Raw(JsonSerializer.Serialize(product.IsMarked.ToString().ToLower())),
+                            isRecipe: @Html.Raw(JsonSerializer.Serialize(product.IsRecipe.ToString().ToLower())),
+                            qrCodes: @Html.Raw(JsonSerializer.Serialize(string.Join(",", product.AvailableQrCodes)))
+                        });
+            </text>
+        }
+
+        function updateTotalAmount() {
+            totalAmount = 0;
+            $('#itemsBody tr').each(function () {
+                const qty = parseInt($(this).find('.quantity-input').val()) || 0;
+                const price = parseFloat($(this).find('.price').data('price')) || 0;
+                totalAmount += qty * price;
+            });
+            $('#totalAmount').text(totalAmount.toFixed(2));
+        }
+
+        function getAvailableQrCode(qrCodes) {
+            if (!qrCodes || qrCodes.length === 0) return null;
+            for (let qr of qrCodes) {
+                if (!usedQrCodes.has(qr)) {
+                    usedQrCodes.add(qr);
+                    return qr;
+                }
+            }
+            return null;
+        }
+
+        function releaseQrCode(qrCode) {
+            if (qrCode) usedQrCodes.delete(qrCode);
+        }
+
+        function addProductToTable(product) {
+            const batchId = product.batchId;
+            if ($(`input[name='Items[${itemsCount}].BatchId'][value='${batchId}']`).length > 0) {
+                return alert('Этот товар уже добавлен.');
+            }
+
+            const isMarked = product.isMarked === 'true';
+            const isRecipe = product.isRecipe === 'true';
+            const qrCodes = product.qrCodes ? product.qrCodes.split(',') : [];
+
+            let qrCode = isMarked ? getAvailableQrCode(qrCodes) : null;
+            if (isMarked && !qrCode) {
+                return alert('Нет доступных QR-кодов.');
+            }
+
+            const row = `
+
+                <tr>
+                    <td>${product.title}</td>
+                    <td>${product.batch}</td>
+                    <td>${product.exp}</td>
+                    <td class="price" data-price="${product.price}">${product.price} ₽</td>
+                    <td>${product.remain}</td>
+                    <td>
+                        <input type="number" class="form-control quantity-input" name="Items[${itemsCount}].Quantity" value="1" min="1" max="${product.remain}" required />
+                    </td>
+                    <td class="qr-code" data-qr-code="${qrCode || ''}">
+                        ${qrCode || 'Не требуется'}
+                        <input type="hidden" name="Items[${itemsCount}].QrCode" value="${qrCode || ''}" />
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-danger remove-item">×</button>
+                    </td>
+                    <input type="hidden" name="Items[${itemsCount}].BatchId" value="${batchId}" />
+                    <input type="hidden" name="Items[${itemsCount}].Price" value="${product.price}" />
+                    <input type="hidden" name="Items[${itemsCount}].IsMarked" value="${isMarked}" />
+                    <input type="hidden" name="Items[${itemsCount}].IsRecipe" value="${isRecipe}" />
+                </tr>
+            `;
+
+            $('#itemsBody').append(row);
+            itemsCount++;
+
+            updateTotalAmount();
+        }
+
+        $('#productSearch').on('input', function () {
+            const query = $(this).val().toLowerCase();
+            const filteredProducts = allProducts.filter(product => product.title.toLowerCase().includes(query));
+            console.log(filteredProducts);
+            const $dropdown = $('#searchDropdown');
+            $dropdown.empty();
+
+            if (query && filteredProducts.length > 0) {
+                filteredProducts.forEach(product => {
+                    const $item = $('<a href="#" class="list-group-item list-group-item-action"></a>')
+                        .text(`${product.title} (Партия: ${product.batch})`)
+                        .on('click', function (e) {
+                            e.preventDefault();
+                            addProductToTable(product);
+                            $dropdown.hide();
+                            $('#productSearch').val('');
+                        });
+                    $dropdown.append($item);
+                });
+                $dropdown.show();
+            } else {
+                $dropdown.hide();
+            }
+        });
+
+        $(document).ready(function () {
+            updateTotalAmount();
+        });
+    </script>
 }
+

@@ -28,10 +28,9 @@ namespace WebAppPharmacy.Controllers
             var sql = @"
             SELECT b.""Id"", p.""Title"" AS ""ProductTitle"", b.""BatchNumber"", 
                    b.""SupplyDate"", b.""ExpirationDate"", b.""Quantity"", 
-                   b.""RemainingQuantity"", b.""PurchasePrice"", s.""StatusName"" AS ""StatusName""
+                   b.""RemainingQuantity"", b.""PurchasePrice""
             FROM batches b
-            JOIN products p ON p.""Id"" = b.""ProductId""
-            JOIN batch_statuses s ON s.""Id"" = b.""StatusId""";
+            JOIN products p ON p.""Id"" = b.""ProductId""";
 
             var result = await _context.Set<BatchViewModel>().FromSqlRaw(sql).ToListAsync();
             return View(result);
@@ -41,19 +40,17 @@ namespace WebAppPharmacy.Controllers
         public IActionResult Create()
         {
             ViewData["ProductId"] = new SelectList(_context.Products.ToList(), "Id", "Title");
-            ViewData["StatusId"] = new SelectList(_context.BatchStatuses.ToList(), "Id", "StatusName");
             return View();
         }
 
         // POST: Batches/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ProductId,BatchNumber,SupplyDate,ExpirationDate,Quantity,RemainingQuantity,PurchasePrice,StorageConditions,StatusId")] Batch batch)
+        public async Task<IActionResult> Create([Bind("ProductId,BatchNumber,SupplyDate,ExpirationDate,Quantity,RemainingQuantity,PurchasePrice,StorageConditions")] Batch batch)
         {
             if (!ModelState.IsValid)
             {
                 ViewData["ProductId"] = new SelectList(_context.Products.ToList(), "Id", "Title", batch.ProductId);
-                ViewData["StatusId"] = new SelectList(_context.BatchStatuses.ToList(), "Id", "StatusName", batch.StatusId);
                 return View(batch);
             }
             batch.SupplyDate = DateTime.SpecifyKind(batch.SupplyDate, DateTimeKind.Utc);
@@ -61,8 +58,8 @@ namespace WebAppPharmacy.Controllers
             var sql = @"
             INSERT INTO batches 
             (""ProductId"", ""BatchNumber"", ""SupplyDate"", ""ExpirationDate"", 
-             ""Quantity"", ""RemainingQuantity"", ""PurchasePrice"", ""StorageConditions"", ""StatusId"") 
-            VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8})";
+             ""Quantity"", ""RemainingQuantity"", ""PurchasePrice"", ""StorageConditions"") 
+            VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7})";
 
             await _context.Database.ExecuteSqlRawAsync(sql,
                 batch.ProductId,
@@ -72,8 +69,7 @@ namespace WebAppPharmacy.Controllers
                 batch.Quantity,
                 batch.RemainingQuantity,
                 batch.PurchasePrice,
-                batch.StorageConditions,
-                batch.StatusId);
+                batch.StorageConditions);
 
             return RedirectToAction(nameof(Index));
         }
@@ -90,14 +86,14 @@ namespace WebAppPharmacy.Controllers
             if (batch == null) return NotFound();
 
             ViewData["ProductId"] = new SelectList(_context.Products.ToList(), "Id", "Title", batch.ProductId);
-            ViewData["StatusId"] = new SelectList(_context.BatchStatuses.ToList(), "Id", "StatusName", batch.StatusId);
+
             return View(batch);
         }
 
         // POST: Batches/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(long id, [Bind("Id,ProductId,BatchNumber,SupplyDate,ExpirationDate,Quantity,RemainingQuantity,PurchasePrice,StorageConditions,StatusId")] Batch batch)
+        public async Task<IActionResult> Edit(long id, [Bind("Id,ProductId,BatchNumber,SupplyDate,ExpirationDate,Quantity,RemainingQuantity,PurchasePrice,StorageConditions")] Batch batch)
         {
             if (id != batch.Id) return NotFound();
 
@@ -107,7 +103,7 @@ namespace WebAppPharmacy.Controllers
             if (!ModelState.IsValid)
             {
                 ViewData["ProductId"] = new SelectList(_context.Products.ToList(), "Id", "Title", batch.ProductId);
-                ViewData["StatusId"] = new SelectList(_context.BatchStatuses.ToList(), "Id", "StatusName", batch.StatusId);
+
                 return View(batch);
             }
 
@@ -115,8 +111,8 @@ namespace WebAppPharmacy.Controllers
             UPDATE batches SET 
                 ""ProductId"" = {0}, ""BatchNumber"" = {1}, ""SupplyDate"" = {2}, ""ExpirationDate"" = {3},
                 ""Quantity"" = {4}, ""RemainingQuantity"" = {5}, ""PurchasePrice"" = {6}, 
-                ""StorageConditions"" = {7}, ""StatusId"" = {8}
-            WHERE ""Id"" = {9}";
+                ""StorageConditions"" = {7}
+            WHERE ""Id"" = {8}";
 
             await _context.Database.ExecuteSqlRawAsync(sql,
                 batch.ProductId,
@@ -127,7 +123,6 @@ namespace WebAppPharmacy.Controllers
                 batch.RemainingQuantity,
                 batch.PurchasePrice,
                 batch.StorageConditions,
-                batch.StatusId,
                 batch.Id);
 
             return RedirectToAction(nameof(Index));
@@ -165,13 +160,14 @@ namespace WebAppPharmacy.Controllers
 
                 var unitItems = await _context.UnitItems
                     .FromSqlRaw(
-                        "SELECT \"Id\", \"QrCode\", \"BatchId\" " +
+                        "SELECT \"Id\", \"QrCode\", \"BatchId\", \"IsSold\" " +
                         "FROM unit_items " +
                         "WHERE \"BatchId\" = {0}", id)
                     .Select(u => new UnitItemDto
                     {
                         Id = u.Id,
-                        QrCode = u.QrCode
+                        QrCode = u.QrCode,
+                        IsSold = u.IsSold,
                     })
                     .ToListAsync();
 
@@ -402,7 +398,6 @@ namespace WebAppPharmacy.Controllers
             if (batch == null) return NotFound();
 
             batch.Product = await _context.Products.FirstOrDefaultAsync(p => p.Id == batch.ProductId);
-            batch.Status = await _context.BatchStatuses.FirstOrDefaultAsync(s => s.Id == batch.StatusId);
 
             return View(batch);
         }

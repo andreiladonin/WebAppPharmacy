@@ -22,8 +22,7 @@ namespace WebAppPharmacy
         public DbSet<SupplierOrder> SupplierOrders { get; set; }
 
         // Дополнительные таблицы
-        public DbSet<UnitItem> UnitItems { get; set; }
-        public DbSet<OrderDetailStatus> OrderDetailStatuses { get; set; }
+        public DbSet<UnitItem> UnitItems { get; set; } 
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<PrescriptionItem> PrescriptionItems { get; set; }
 
@@ -31,21 +30,28 @@ namespace WebAppPharmacy
         public DbSet<Category> Categories { get; set; }
         public DbSet<ProductType> ProductTypes { get; set; }
         public DbSet<MeasurementUnit> MeasurementUnits { get; set; }
-        public DbSet<BatchStatus> BatchStatuses { get; set; }
         public DbSet<SaleStatus> SaleStatuses { get; set; }
         public DbSet<SupplierOrderStatus> SupplierOrderStatuses { get; set; }
         public DbSet<PrescriptionStatus> PrescriptionStatuses { get; set; }
-
+        public DbSet<SaleListItemViewModel> SaleListItemViewModel { get; set; }
+        public DbSet<SaleDetailViewModel> SaleDetailViewModel { get; set; }
+        public DbSet<SaleDetailItemViewModel> SaleDetailItemViewModel { get; set; }
+        public DbSet<SupplierOrderListItemViewModel> SupplierOrderListItemViewModel { get; set; }
+        public DbSet<User> Users { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
             // ViewModel без ключей и без привязки к миграциям
             modelBuilder.Entity<OrderDetailViewModel>().HasNoKey().ToView(null);
             modelBuilder.Entity<SaleViewModel>().HasNoKey().ToView(null);
             modelBuilder.Entity<ProductViewModel>().HasNoKey().ToView(null);
             modelBuilder.Entity<BatchViewModel>().HasNoKey().ToView(null);
             modelBuilder.Entity<PrescriptionViewModel>().HasNoKey().ToView(null);
+            modelBuilder.Entity<SaleItemViewModel>().HasNoKey().ToView(null);
+            modelBuilder.Entity<SaleDetailViewModel>().HasNoKey().ToView(null);
+            modelBuilder.Entity<SaleDetailItemViewModel>().HasNoKey().ToView(null);
+            modelBuilder.Entity<SupplierOrderListItemViewModel>().HasNoKey().ToView(null);
+
         }
 
     }

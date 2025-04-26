@@ -52,7 +52,7 @@
             </div>
 
             <div class="form-floating mb-3">
-                <input asp-for="RemainingQuantity" class="form-control" />
+                <input disabled value="0" asp-for="RemainingQuantity" class="form-control" />
                 <label asp-for="RemainingQuantity"></label>
                 <span asp-validation-for="RemainingQuantity" class="text-danger"></span>
             </div>
@@ -63,13 +63,6 @@
                 <span asp-validation-for="PurchasePrice" class="text-danger"></span>
             </div>
 
-            <div class="form-floating mb-3">
-                <select asp-for="StatusId" class="form-select" asp-items="ViewBag.StatusId">
-                    <option value="">-- выберите статус --</option>
-                </select>
-                <label asp-for="StatusId">Статус</label>
-                <span asp-validation-for="StatusId" class="text-danger"></span>
-            </div>
         </div>
     </div>
 

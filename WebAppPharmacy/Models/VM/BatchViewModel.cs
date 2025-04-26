@@ -10,7 +10,6 @@
         public int Quantity { get; set; }
         public int RemainingQuantity { get; set; }
         public decimal PurchasePrice { get; set; }
-        public string StatusName { get; set; } = null!;
     }
 
 }

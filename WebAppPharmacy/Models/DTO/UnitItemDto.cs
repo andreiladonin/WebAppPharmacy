@@ -4,5 +4,6 @@
     {
         public long Id { get; set; }
         public string QrCode { get; set; } = null!;
+        public bool IsSold { get; set; }
     }
 }

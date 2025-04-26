@@ -1,49 +1,61 @@
 ﻿@model WebAppPharmacy.Models.Client
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Редактировать клиента";
 }
 
-<h1>Edit</h1>
+<div class="container mt-4">
+    <h2 class="mb-4 text-info">
+        <i class="bi bi-pencil-fill me-2"></i> Редактировать клиента
+    </h2>
 
-<h4>Client</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
+    <div class="card p-4">
+        <h4 class="mb-3">Информация о клиенте</h4>
+
         <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
+
+            <div class="form-group mb-3">
                 <label asp-for="FullName" class="control-label"></label>
-                <input asp-for="FullName" class="form-control" />
+                <input asp-for="FullName" class="form-control" placeholder="Введите ФИО клиента" />
                 <span asp-validation-for="FullName" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mb-3">
                 <label asp-for="DateBirthday" class="control-label"></label>
-                <input asp-for="DateBirthday" class="form-control" />
+                <input asp-for="DateBirthday" class="form-control" type="date" />
                 <span asp-validation-for="DateBirthday" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mb-3">
                 <label asp-for="Email" class="control-label"></label>
-                <input asp-for="Email" class="form-control" />
+                <input asp-for="Email" class="form-control" placeholder="Введите email клиента" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mb-3">
                 <label asp-for="Phone" class="control-label"></label>
-                <input asp-for="Phone" class="form-control" />
+                <input asp-for="Phone" class="form-control" placeholder="Введите номер телефона клиента" />
                 <span asp-validation-for="Phone" class="text-danger"></span>
             </div>
+
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Сохранить" class="btn btn-primary" />
             </div>
         </form>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+    <div class="d-flex gap-2 mt-4">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left-circle me-1"></i> Назад к списку
+        </a>
+    </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

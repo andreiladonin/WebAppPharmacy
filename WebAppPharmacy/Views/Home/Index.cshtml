@@ -1,8 +1,30 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Главная страница";
 }
-
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Система учета товарооборота аптек</h1>
+    <p class="lead">Это веб-приложение для управления аптечными товарами и продажами.</p>
+    
+</div>
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Товары</h5>
+                <p class="card-text">Просмотр, добавление и редактирование товаров.</p>
+                <a asp-controller="Products" asp-action="Index" class="btn btn-primary">Перейти</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Продажи</h5>
+                <p class="card-text">Управление продажами и их статусами.</p>
+                <a asp-controller="Sales" asp-action="Index" class="btn btn-primary">Перейти</a>
+            </div>
+        </div>
+    </div>
+
+    </div>
 </div>

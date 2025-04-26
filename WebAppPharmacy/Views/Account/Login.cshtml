@@ -1,0 +1,38 @@
+﻿@model WebAppPharmacy.Models.User
+
+@{
+    ViewData["Title"] = "Вход в систему";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg p-4 mt-5">
+                <h2 class="text-center mb-4">Вход в систему</h2>
+
+                <form asp-action="Login" method="post">
+                    <div class="form-group">
+                        <label for="Username">Юзернейм</label>
+                        <input id="Username" asp-for="Username" type="text" class="form-control" placeholder="Введите ваш юзернейм" required />
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mt-3">
+                        <label for="Password">Пароль</label>
+                        <input id="Password" asp-for="PasswordHash" type="password" class="form-control" placeholder="Введите ваш пароль" required />
+                        <span asp-validation-for="PasswordHash" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mt-3">
+                        <button type="submit" class="btn btn-primary btn-block">Вход в систему</button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-3">
+                    <p>Уже нет аккаунта? <a href="/Account/register">Зарегистрироваться</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
